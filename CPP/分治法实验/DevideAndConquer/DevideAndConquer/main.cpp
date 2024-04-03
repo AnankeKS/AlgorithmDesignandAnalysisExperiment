@@ -1,0 +1,106 @@
+//
+//  main.cpp
+//  DevideAndConquer
+//
+//  Created by 无铭 on 2024/4/3.
+//
+
+#include "test.hpp"
+
+
+
+void findMaxAndSecond(vector<int>& array);
+
+void mergeSort(vector<int>& array, int L, int R);
+
+int main(int argc, const char * argv[]) {
+    vector<int> array = {1,13,4,3,23,4};
+//    findMaxAndSecond(array);
+    mergeSort(array, 0, (int)array.size() - 1);
+    for(auto &i : array)
+        cout << i << " ";
+    cout << endl;
+    return 0;
+}
+
+
+
+// MARK: 查找最大值和次大值
+void findMaxAndSecond(vector<int>& array){
+    int low = 0, high = (int)array.size();
+    vector<int> ans;
+    int num_1, num_2, max = 0;
+    int index;
+    
+    
+    for(int index = low; index < high; ++index){
+        int mid = (low + high) / 2;
+        num_1 = array[low];
+        num_2 = array[mid];
+        // find the maximum in [low, mid)
+        for(int i = low; i < mid; ++i)
+            if(array[i] > num_1)
+                num_1 = array[i];
+        // find the maximum in [mid, high)
+        for(int i = mid; i < high; ++i)
+            if(array[i] > num_2)
+                num_2 = array[i];
+        
+        // find the second largest number between num_1 and num_2
+        if(num_1 >= num_2){
+            max = max > num_1 ? max : num_1;
+            ans.push_back(num_2);
+            high = mid;
+            index = low;
+        } else {
+            max = max > num_2 ? max : num_2;
+            ans.push_back(num_1);
+            low = mid;
+            index = low;
+        }
+    }
+    
+    int secLargest = ans[0];
+    for(auto &i : ans)
+        if(secLargest < i)
+            secLargest = i;
+    
+    cout << "最大值为: " << max << endl;
+    cout << "次大值为: " << secLargest << endl;
+}
+
+
+// MARK: 归并排序
+void merge_(vector<int>& array, int L, int M, int R);
+void mergeSort(vector<int>& array, int L, int R){
+    if(L == R)
+        return;
+    else {
+        int mid = (L + R) / 2;
+        mergeSort(array, L, mid);
+        mergeSort(array, mid + 1, R);
+        merge_(array, L, mid, R);
+    }
+}
+
+void merge_(vector<int>& array, int L, int M, int R){
+    vector<int> left, right;
+    for(int i = L; i <= M; ++i)
+        left.push_back(array[i]);
+    for(int i = M + 1; i <= R; ++i)
+        right.push_back(array[i]);
+    
+    
+    int i = 0, j = 0, k = L;
+    while(i < left.size() && j < right.size()){
+        if(left[i] < right[j])
+            array[k] = left[i++];
+        else
+            array[k] = right[j++];
+        k++;
+    }
+    while(i < left.size())
+        array[k++] = left[i++];
+    while(j < right.size())
+        array[k++] = right[j++];
+}
