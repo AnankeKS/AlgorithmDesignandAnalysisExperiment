@@ -15,6 +15,8 @@
 
 using namespace std;
 
-void test(const char * lable, function<void(vector<int>)> codeblock, vector<int> & array);
+void test(const char * label, function<void(vector<int>)> codeblock, vector<int> & array);
+
+void test(const char * label, function<void(void)> codeblock);
 
 #endif /* test_hpp */

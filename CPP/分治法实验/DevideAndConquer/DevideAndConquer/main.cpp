@@ -13,13 +13,32 @@ void findMaxAndSecond(vector<int>& array);
 
 void mergeSort(vector<int>& array, int L, int R);
 
+int * returnArr(){
+    int max = 10, secLargest = 9;
+    static int a[] = {2, max, secLargest};
+    return a;
+}
+
+
+#ifdef _cplusplus
+extern "C" void display();
+#else
+void display();
+#endif
+
+void getHex(int n){
+   if(n > 0){
+       getHex(n / 16);
+       cout << n % 16 << " ";
+   }
+}
+
 int main(int argc, const char * argv[]) {
-    vector<int> array = {1,13,4,3,23,4};
-//    findMaxAndSecond(array);
-    mergeSort(array, 0, (int)array.size() - 1);
-    for(auto &i : array)
-        cout << i << " ";
-    cout << endl;
+    test("测试 const", [&](){
+        // C++ 中的 const 类似于 #define，区别在于宏定义是在预处理阶段的替换，而 const 是在编译阶段的替换
+        getHex(1234);
+        cout << endl;
+    });
     return 0;
 }
 
