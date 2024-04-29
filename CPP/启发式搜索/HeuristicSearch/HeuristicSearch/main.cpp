@@ -15,12 +15,12 @@
 
 using namespace std;
 
-class PSO {
+class GSA {
 private:
     const int dim;                  // 维数
     const int N;                    // 粒子个数
-    const int G;                    // 万有引力常数，后续的常数都会根据这个计算，默认为 100
-    const int a;                    // 计算万有引力时的常数 a, 默认为 20
+    const double G;                 // 万有引力常数，后续的常数都会根据这个计算，默认为 100
+    const double a;                 // 计算万有引力时的常数 a, 默认为 20
     const int T;                    // 最大迭代次数
     const double itervalLength;     // 界限被设置为 [-itervalLength / 2, itervalLength / 2]
     double minFit;                  // 全局最小适应度，这个值就是最终要找的
@@ -36,7 +36,7 @@ private:
     vector<vector<double>> A;       // 在迭代中某一维度的粒子的加速度
     
     void updateFitness();                       // 更新适应度
-    int worst();                                // 获取最小适应度
+    int worst();                                // 获取最小适应度  返回值为最小适应度对应的粒子下表
     void best();                                // 获取最大适应度
     void updateM();                             // 获取所有粒子的质量
     double updateG(const int &iter) const;      // 更新第 iter 次迭代时的万有引力常数
@@ -45,14 +45,14 @@ private:
     void updateVaX(const int &iter);            // 更新速度和位置
     
 public:
-    PSO(const int dim = 10, const int N = 50, const int G = 100, const int a = 20, const int T = 800, const double itervalLength = 10, double minFit = 10000, double maxFit = 0, bool flag = false);
+    GSA(const int dim = 10, const int N = 50, const int G = 100, const int a = 20, const int T = 800, const double itervalLength = 10, double minFit = 10000, double maxFit = 0, bool flag = false);
     
     // MARK: get the answer
     void solve();                               // 获取结果的函数
 };
 
 // MARK: 构造器
-PSO :: PSO(const int dim, const int N, const int G, const int a, const int T, const double itervalLength, double minFit, double maxFit, bool flag): dim(dim), N(N), G(G), a(a), T(T), itervalLength(itervalLength), minFit(minFit), maxFit(maxFit), flag(flag){
+GSA :: GSA(const int dim, const int N, const int G, const int a, const int T, const double itervalLength, double minFit, double maxFit, bool flag): dim(dim), N(N), G(G), a(a), T(T), itervalLength(itervalLength), minFit(minFit), maxFit(maxFit), flag(flag){
     // 设置随机数种子
     srand((unsigned int)time(0));
     // 第一个随机数总是非常假的假随机
@@ -79,7 +79,7 @@ PSO :: PSO(const int dim, const int N, const int G, const int a, const int T, co
 }
 
 // MARK: 更新适应度
-void PSO :: updateFitness() {
+void GSA :: updateFitness() {
     for(int i = 0; i < this->N; ++i){
         double fitness1 = 0, fitness2 = 1;
         for(int j = 0; j < this->dim; ++j){
@@ -104,7 +104,7 @@ void PSO :: updateFitness() {
 }
 
 // MARK: 获取最小适应度
-int PSO :: worst() {
+int GSA :: worst() {
     int index = 0;
     for(int i = 0; i < this->N; ++i)
         if(this->fitness[i] < this->minFit){
@@ -116,7 +116,7 @@ int PSO :: worst() {
 }
 
 // MARK: 获取最大适应度
-void PSO :: best() {
+void GSA :: best() {
     this->maxFit = fitness[0];
     for(auto &i : fitness)
         if(i > this->maxFit)
@@ -124,13 +124,13 @@ void PSO :: best() {
 }
 
 // MARK: 更新第 iter 次迭代时的万有引力常数
-double PSO :: updateG(const int &iter) const {
+double GSA :: updateG(const int &iter) const {
     double _G = G*exp((-(this->a)*iter)/(this->T));
     return _G;
 }
 
 // MARK: 获取所有粒子的质量
-void PSO :: updateM() {
+void GSA :: updateM() {
     // 更新适应度
     updateFitness();
     worst();
@@ -153,7 +153,7 @@ void PSO :: updateM() {
 }
 
 // MARK: 计算欧式距离
-double PSO :: getR(const int &i, const int &j){
+double GSA :: getR(const int &i, const int &j){
     double sumR = 0;
     for(int d = 0; d < this->dim; ++d){
         sumR += abs(X[i][d] - X[j][d]);
@@ -162,7 +162,7 @@ double PSO :: getR(const int &i, const int &j){
 }
 
 // MARK: 更新加速度
-void PSO :: updateA(const int &iter){
+void GSA :: updateA(const int &iter){
     // 粒子之间的力
     vector<vector<vector<double>>> f;
     // 当前迭代层次的 G
@@ -202,7 +202,7 @@ void PSO :: updateA(const int &iter){
     }
 }
 
-void PSO :: updateVaX(const int &iter){
+void GSA :: updateVaX(const int &iter){
     // 更新每个维度的每个粒子的加速度
     this->updateA(iter);
     const double Bound = this->itervalLength / 2;
@@ -222,7 +222,7 @@ void PSO :: updateVaX(const int &iter){
     }
 }
 
-void PSO :: solve() {
+void GSA :: solve() {
     for(int iter = 0; iter < this->T; ++iter){
         this->updateVaX(iter);
     }
@@ -232,7 +232,11 @@ void PSO :: solve() {
 
 int main(){
     srand((unsigned int)time(0));
-    PSO ans;
+    GSA ans;
+    clock_t start, end;
+    start = clock();
     ans.solve();
+    end = clock();
+    cout << double(end - start)/CLOCKS_PER_SEC << endl;
     return 0;
 }
