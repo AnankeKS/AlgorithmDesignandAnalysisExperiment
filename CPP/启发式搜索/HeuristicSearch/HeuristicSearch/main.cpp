@@ -25,7 +25,7 @@ private:
     const double itervalLength;     // 界限被设置为 [-itervalLength / 2, itervalLength / 2]
     double minFit;                  // 全局最小适应度，这个值就是最终要找的
     double maxFit;                  // 全局最大适应度
-    bool flag;                      // 标志是否更新了 minFit
+    int minFitIndex;                // 最小适应度对应的粒子下标
     
     vector<double> fitness;         // 适应值，里面存放了每个粒子的适应值
     vector<double> q;               // 每个粒子归一化后的值
@@ -36,7 +36,7 @@ private:
     vector<vector<double>> A;       // 在迭代中某一维度的粒子的加速度
     
     void updateFitness();                       // 更新适应度
-    int worst();                                // 获取最小适应度  返回值为最小适应度对应的粒子下表
+    void worst();                               // 获取最小适应度  返回值为最小适应度对应的粒子下表
     void best();                                // 获取最大适应度
     void updateM();                             // 获取所有粒子的质量
     double updateG(const int &iter) const;      // 更新第 iter 次迭代时的万有引力常数
@@ -45,14 +45,15 @@ private:
     void updateVaX(const int &iter);            // 更新速度和位置
     
 public:
-    GSA(const int dim = 10, const int N = 50, const int G = 100, const int a = 20, const int T = 800, const double itervalLength = 10, double minFit = 10000, double maxFit = 0, bool flag = false);
+    GSA(const int dim = 10, const int N = 50, const double G = 100, const double a = 20, const int T = 800, const double itervalLength = 10, double minFit = 10000, double maxFit = 0);
     
     // MARK: get the answer
     void solve();                               // 获取结果的函数
+    double print();                             // 输出最小适应度及其组成，返回最小适应度
 };
 
 // MARK: 构造器
-GSA :: GSA(const int dim, const int N, const int G, const int a, const int T, const double itervalLength, double minFit, double maxFit, bool flag): dim(dim), N(N), G(G), a(a), T(T), itervalLength(itervalLength), minFit(minFit), maxFit(maxFit), flag(flag){
+GSA :: GSA(const int dim, const int N, const double G, const double a, const int T, const double itervalLength, double minFit, double maxFit): dim(dim), N(N), G(G), a(a), T(T), itervalLength(itervalLength), minFit(minFit), maxFit(maxFit){
     // 设置随机数种子
     srand((unsigned int)time(0));
     // 第一个随机数总是非常假的假随机
@@ -89,30 +90,15 @@ void GSA :: updateFitness() {
         }
         fitness[i] = fitness1 - fitness2 + 1;
     }
-    
-    // 找到最小适应度
-    int index = this->worst();
-    if(flag){
-        cout << "当前的最小适应度为：" << fitness[index] << endl;
-        cout << "其组成为: ";
-        for(int i = 0; i < this->dim; ++i)
-            cout << this->X[index][i] << " ";
-        cout << endl;
-        // 恢复为 false
-        this->flag = false;
-    }
 }
 
 // MARK: 获取最小适应度
-int GSA :: worst() {
-    int index = 0;
+void GSA :: worst() {
     for(int i = 0; i < this->N; ++i)
         if(this->fitness[i] < this->minFit){
             this->minFit = this->fitness[i];
-            index = i;
-            this->flag = true;
+            this->minFitIndex = i;
         }
-    return index;
 }
 
 // MARK: 获取最大适应度
@@ -222,11 +208,23 @@ void GSA :: updateVaX(const int &iter){
     }
 }
 
+double GSA :: print() {
+    // 找到最小适应度
+    int index = this->minFitIndex;
+    cout << this->fitness[index] << endl;
+    cout << "最优解为：" << this->minFit << endl;
+    cout << "其组成为: ";
+    for(int i = 0; i < this->dim; ++i)
+        cout << this->X[index][i] << " ";
+    cout << endl;
+    return this->minFit;
+}
+
 void GSA :: solve() {
     for(int iter = 0; iter < this->T; ++iter){
         this->updateVaX(iter);
     }
-    cout << "最优解为: " << this->minFit << endl;
+    this->print();
 }
 
 
@@ -237,6 +235,6 @@ int main(){
     start = clock();
     ans.solve();
     end = clock();
-    cout << double(end - start)/CLOCKS_PER_SEC << endl;
+    cout << "程序耗时：" << double(end - start)/CLOCKS_PER_SEC << "秒" << endl;
     return 0;
 }
